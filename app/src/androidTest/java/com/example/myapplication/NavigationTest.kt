@@ -7,6 +7,7 @@ import androidx.test.core.app.launchActivity
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.Espresso.pressBackUnconditionally
+import androidx.test.espresso.NoActivityResumedException
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
@@ -60,6 +61,10 @@ class NavigationTest {
                 activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
         Thread.sleep(1000)
+    }
+
+    private fun checkOnScreen(id: Int) {
+        Espresso.onView(ViewMatchers.withId(id)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
     }
 
     @Test
@@ -147,5 +152,57 @@ class NavigationTest {
         openAbout()
         rotate(activityScenario)
         onlyAboutDisplayed()
+    }
+
+    @Test
+    fun testRotateAndCheckContent() {
+        val activityScenario = ActivityScenario.launch(MainActivity::class.java)
+        rotate(activityScenario)
+        checkOnScreen(R.id.bnToSecond)
+        click(R.id.bnToSecond)
+        rotate(activityScenario)
+        checkOnScreen(R.id.bnToFirst)
+        checkOnScreen(R.id.bnToThird)
+        click(R.id.bnToThird)
+        for (i in 1..2) {
+            rotate(activityScenario)
+            checkOnScreen(R.id.bnToFirst)
+            checkOnScreen(R.id.bnToSecond)
+        }
+    }
+
+    @Test
+    fun testNavigation() {
+        ActivityScenario.launch(MainActivity::class.java)
+        openAbout()
+        Espresso.onView(ViewMatchers.withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(ViewActions.click())
+        onlyFirstFragmentDisplayed()
+        checkOnScreen(R.id.bnToSecond)
+
+        click(R.id.bnToSecond)
+        openAbout()
+        Espresso.onView(ViewMatchers.withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(ViewActions.click())
+        onlySecondFragmentDisplayed()
+        checkOnScreen(R.id.bnToFirst)
+        checkOnScreen(R.id.bnToThird)
+
+        click(R.id.bnToThird)
+        openAbout()
+        Espresso.onView(ViewMatchers.withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(ViewActions.click())
+        onlyThirdFragmentDisplayed()
+        checkOnScreen(R.id.bnToFirst)
+        checkOnScreen(R.id.bnToSecond)
+        click(R.id.bnToFirst)
+    }
+
+    @Test
+    fun testNavigationException() {
+        ActivityScenario.launch(MainActivity::class.java)
+        try {
+            Espresso.onView(ViewMatchers.withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(ViewActions.click())
+            assert(false)
+        } catch (NoActivityResumedException: Exception) {
+            assert(true)
+        }
     }
 }
