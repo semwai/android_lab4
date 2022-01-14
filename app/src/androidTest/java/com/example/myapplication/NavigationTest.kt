@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.launchActivity
 import androidx.test.espresso.Espresso
-import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.Espresso.pressBackUnconditionally
 import androidx.test.espresso.NoActivityResumedException
 import androidx.test.espresso.action.ViewActions
@@ -51,6 +50,7 @@ class NavigationTest {
 
     private fun click(id: Int) {
         Espresso.onView(ViewMatchers.withId(id)).perform(ViewActions.click())
+        Thread.sleep(400)
     }
 
     private fun rotate(activityScenario: ActivityScenario<MainActivity>) {
@@ -65,6 +65,11 @@ class NavigationTest {
 
     private fun checkOnScreen(id: Int) {
         Espresso.onView(ViewMatchers.withId(id)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+    }
+
+    private fun pressBack() {
+        Espresso.pressBack()
+        Thread.sleep(400)
     }
 
     @Test
@@ -134,6 +139,7 @@ class NavigationTest {
         pressBack() // 2 -> 1
         onlyFirstFragmentDisplayed()
         pressBackUnconditionally() // exit
+        Thread.sleep(600)
         assertTrue(activityScenario.state.isAtLeast(Lifecycle.State.DESTROYED))
     }
 
@@ -192,7 +198,6 @@ class NavigationTest {
         onlyThirdFragmentDisplayed()
         checkOnScreen(R.id.bnToFirst)
         checkOnScreen(R.id.bnToSecond)
-        click(R.id.bnToFirst)
     }
 
     @Test

@@ -32,4 +32,7 @@ private fun openAboutViaOptions() {
         .perform(click())
 }
 
-fun openAbout() = openAboutViaDrawer()
+fun openAbout() {
+    openAboutViaDrawer()
+    Thread.sleep(600)
+}
